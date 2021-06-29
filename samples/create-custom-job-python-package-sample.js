@@ -14,12 +14,19 @@
 
 "use strict";
 
-async function main(project, location, displayName, containerImageUri) {
-  // [START aiplatform_create_hyperparameter_tuning_job_sample]
+async function main(
+  project,
+  location,
+  displayName,
+  packageExecutorImageUri,
+  gcsPythonPackageUri
+) {
+  // [START aiplatform_create_custom_job_python_package_sample]
   // const project = 'PROJECT';
   // const location = 'LOCATION';
   // const displayName = 'DISPLAY_NAME';
-  // const containerImageUri = 'CONTAINER_IMAGE_URI';
+  // const packageExecutorImageUri = 'PACKAGE_EXECUTOR_IMAGE_URI';
+  // const gcsPythonPackageUri = 'GCS_PYTHON_PACKAGE_URI';
   const { JobServiceClient } = require("@google-cloud/aiplatform");
   // The AI Platform services require regional API endpoints.
   const clientOptions = {
@@ -28,45 +35,23 @@ async function main(project, location, displayName, containerImageUri) {
 
   const client = new JobServiceClient(clientOptions);
 
-  async function createHyperparameterTuningJobSample() {
+  async function createCustomJobPythonPackageSample() {
     const parent = `projects/${project}/locations/${location}`;
 
-    const hyperparameterTuningJob = {
+    const customJob = {
       displayName,
-      maxTrialCount: 2,
-      parallelTrialCount: 1,
-      maxFailedTrialCount: 1,
-      studySpec: {
-        metrics: [
-          {
-            metricId: "accuracy",
-            goal: "MAXIMIZE",
-          },
-        ],
-        parameters: [
-          {
-            // Learning rate.
-            parameterId: "lr",
-            doubleValueSpec: {
-              minValue: 0.001,
-              maxValue: 0.1,
-            },
-          },
-        ],
-      },
-      trialJobSpec: {
+      jobSpec: {
         workerPoolSpecs: [
           {
             machineSpec: {
-              machineType: "n1-standard-4",
+              machineType: "n1-standard-2",
               acceleratorType: "NVIDIA_TESLA_K80",
               acceleratorCount: 1,
             },
             replicaCount: 1,
-            containerSpec: {
-              imageUri: containerImageUri,
-              command: [],
-              args: [],
+            pythonPackageSpec: {
+              executorImageUri: packageExecutorImageUri,
+              packageUris: [gcsPythonPackageUri],
             },
           },
         ],
@@ -74,14 +59,14 @@ async function main(project, location, displayName, containerImageUri) {
     };
     const request = {
       parent,
-      hyperparameterTuningJob,
+      customJob,
     };
 
-    const [response] = await client.createHyperparameterTuningJob(request);
+    const [response] = await client.createCustomJob(request);
     console.log(`response: ${JSON.stringify(response, null, 2)}`);
   }
-  await createHyperparameterTuningJobSample();
-  // [END aiplatform_create_hyperparameter_tuning_job_sample]
+  await createCustomJobPythonPackageSample();
+  // [END aiplatform_create_custom_job_python_package_sample]
 }
 
 main(...process.argv.slice(2)).catch((err) => {

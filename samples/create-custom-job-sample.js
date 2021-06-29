@@ -15,7 +15,7 @@
 "use strict";
 
 async function main(project, location, displayName, containerImageUri) {
-  // [START aiplatform_create_hyperparameter_tuning_job_sample]
+  // [START aiplatform_create_custom_job_sample]
   // const project = 'PROJECT';
   // const location = 'LOCATION';
   // const displayName = 'DISPLAY_NAME';
@@ -28,33 +28,12 @@ async function main(project, location, displayName, containerImageUri) {
 
   const client = new JobServiceClient(clientOptions);
 
-  async function createHyperparameterTuningJobSample() {
+  async function createCustomJobSample() {
     const parent = `projects/${project}/locations/${location}`;
 
-    const hyperparameterTuningJob = {
+    const customJob = {
       displayName,
-      maxTrialCount: 2,
-      parallelTrialCount: 1,
-      maxFailedTrialCount: 1,
-      studySpec: {
-        metrics: [
-          {
-            metricId: "accuracy",
-            goal: "MAXIMIZE",
-          },
-        ],
-        parameters: [
-          {
-            // Learning rate.
-            parameterId: "lr",
-            doubleValueSpec: {
-              minValue: 0.001,
-              maxValue: 0.1,
-            },
-          },
-        ],
-      },
-      trialJobSpec: {
+      jobSpec: {
         workerPoolSpecs: [
           {
             machineSpec: {
@@ -74,14 +53,14 @@ async function main(project, location, displayName, containerImageUri) {
     };
     const request = {
       parent,
-      hyperparameterTuningJob,
+      customJob,
     };
 
-    const [response] = await client.createHyperparameterTuningJob(request);
+    const [response] = await client.createCustomJob(request);
     console.log(`response: ${JSON.stringify(response, null, 2)}`);
   }
-  await createHyperparameterTuningJobSample();
-  // [END aiplatform_create_hyperparameter_tuning_job_sample]
+  await createCustomJobSample();
+  // [END aiplatform_create_custom_job_sample]
 }
 
 main(...process.argv.slice(2)).catch((err) => {
